@@ -2,9 +2,10 @@
 socket (server.py), built from implementations of the abstract classes in abstract/.
 
 Layout
-    abstract/        GpuProvider, Checker
+    abstract/        GpuProvider, Checker, Hook
     gpu_provider/    implementations of GpuProvider (LocalGpus)
     checker/         implementations of Checker (CommandChecker)
+    hook/            implementations of Hook (CommandHook)
     loop.py          Loop: the protocol, the state and the log of a run
     server.py        serve() and request()
 

@@ -6,6 +6,6 @@ Modules
     test_schedule.py    describe, check and simulate on the example's graph
     test_order.py       orders of a schedule and the search
     test_tiny.py        the example trains and matches its references (gloo, CPU)
-    test_loop.py        the loop's protocol, state and log, and its socket server
+    test_loop.py        the loop's protocol, state, log and hooks, and its socket server
     test_tools.py       stub, skills and the et-* commands
 """

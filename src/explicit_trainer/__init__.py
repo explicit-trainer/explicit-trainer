@@ -5,6 +5,7 @@ Packages
     framework   models, placements, steps and graphs, plans, schedules, the trainer
     tools       offline analysis: schedules (validate, simulate, search), profiled steps, memory
     skills      instructions for agents, one Markdown file per skill
-    loop        the scripted side of an agent's run toward a goal, served on a UNIX socket
+    loop        the scripted side of an agent's run toward a goal, served on a UNIX socket, with hooks that
+                show every message elsewhere
     cli         the et-* commands
 """

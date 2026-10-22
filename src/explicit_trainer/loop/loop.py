@@ -4,8 +4,8 @@ with fixed text, keeps the run's state and log, reserves GPUs, and decides when 
 Purpose and design. The loop is passive: it never calls the agent. Whoever runs the agent relays
 each of its messages to reply() and the answer back (directly, or through server.py), so the agent
 cannot bypass the protocol, and the log is the record of the run. What the environment provides
-comes in as implementations of the abstract classes: the GPUs (GpuProvider) and the goal's check
-(Checker). The agent's protocol, a line of its message starting with a keyword in capitals (the
+comes in as implementations of the abstract classes: the GPUs (GpuProvider), the goal's check
+(Checker), and who else sees every message (Hook: called after each is logged). The agent's protocol, a line of its message starting with a keyword in capitals (the
 first match wins):
     RESERVE <n> GPUs <minutes>  -> READY <hosts> if every GPU of the provider is free, else WAIT
     RELEASE                     -> RELEASED, and the instructions again
@@ -21,7 +21,7 @@ excludes pauses and waits for READY.
 
 Public components
     CONTINUE_TEXT, RESEND_EVERY, PROTOCOL_TEXT
-    Loop(run_dir, instructions, provider, checker)
+    Loop(run_dir, instructions, provider, checker, hooks=())
         start() -> str          the first message to the agent (the run must not have started)
         reply(text) -> str      the answer to one message of the agent
         resume() -> str         after a pause: the message that resumes the agent
@@ -39,6 +39,7 @@ import time
 
 from explicit_trainer.loop.abstract.checker import Checker
 from explicit_trainer.loop.abstract.gpu_provider import GpuProvider
+from explicit_trainer.loop.abstract.hook import Hook
 
 CONTINUE_TEXT = "Continue."
 RESEND_EVERY = 10
@@ -51,8 +52,9 @@ DONE <run directory>         when you believe the goal is achieved; the director
 
 
 class Loop:
-    def __init__(self, run_dir: str, instructions: str, provider: GpuProvider, checker: Checker):
-        self.run_dir, self.provider, self.checker = run_dir, provider, checker
+    def __init__(self, run_dir: str, instructions: str, provider: GpuProvider, checker: Checker,
+                 hooks: tuple[Hook, ...] = ()):
+        self.run_dir, self.provider, self.checker, self.hooks = run_dir, provider, checker, hooks
         self.instructions = instructions.strip() + "\n\n" + PROTOCOL_TEXT
         os.makedirs(run_dir, exist_ok=True)
         path = os.path.join(run_dir, "state.json")
@@ -64,6 +66,8 @@ class Loop:
     def _log(self, direction: str, text: str):
         with open(os.path.join(self.run_dir, "log.jsonl"), "a") as f:
             f.write(json.dumps({"t": time.time(), "dir": direction, "text": text}) + "\n")
+        for hook in self.hooks:
+            hook.message(direction, text)
 
     def _send(self, text: str) -> str:
         self._save()

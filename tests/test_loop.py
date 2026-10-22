@@ -3,6 +3,8 @@
 Public components
     FakeGpus
         A GpuProvider of two hosts and 16 GPUs whose `is_free` the test sets.
+    Recorder
+        A Hook that keeps every (direction, text) it is given.
     Exists
         A Checker: achieved when the directory exists.
     LoopTest
@@ -19,7 +21,9 @@ import unittest
 
 from explicit_trainer.loop.abstract.checker import Checker
 from explicit_trainer.loop.abstract.gpu_provider import GpuProvider
+from explicit_trainer.loop.abstract.hook import Hook
 from explicit_trainer.loop.checker.command import CommandChecker
+from explicit_trainer.loop.hook.command import CommandHook
 from explicit_trainer.loop.loop import CONTINUE_TEXT, RESEND_EVERY, Loop
 from explicit_trainer.loop.server import request, serve
 
@@ -41,6 +45,14 @@ class FakeGpus(GpuProvider):
 class Exists(Checker):
     def check(self, directory):
         return os.path.isdir(directory), f"checked {directory}"
+
+
+class Recorder(Hook):
+    def __init__(self):
+        self.seen = []
+
+    def message(self, direction, text):
+        self.seen.append((direction, text))
 
 
 class LoopTest(unittest.TestCase):
@@ -84,6 +96,17 @@ class LoopTest(unittest.TestCase):
         again = Loop(os.path.join(self.dir, "run"), "Make it fast.", self.gpus, Exists())
         self.assertEqual(again.summary()["phase"], "paused")
         self.assertTrue(again.resume().startswith("RESUME"))
+
+    def test_hooks(self):
+        rec = Recorder()
+        out = os.path.join(self.dir, "hook.txt")
+        failing = CommandHook("exit 3")
+        loop = Loop(os.path.join(self.dir, "hooked"), "Goal.", self.gpus, Exists(),
+                    hooks=(rec, CommandHook(f'printf "[%s] %s\\n" "$1" "$(cat)" >> {out}'), failing))
+        first = loop.start()
+        answer = loop.reply("RESERVE 16 GPUs 5")
+        self.assertEqual(rec.seen, [("loop", first), ("agent", "RESERVE 16 GPUs 5"), ("loop", answer)])
+        self.assertEqual(open(out).read().splitlines()[-2:], ["[agent] RESERVE 16 GPUs 5", "[loop] WAIT"])
 
     def test_command_checker(self):
         self.assertEqual(CommandChecker('test -d "$1" && echo yes').check(self.dir), (True, "yes\n"))

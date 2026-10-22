@@ -22,9 +22,9 @@ torchrun --nproc-per-node 2 -m examples.tiny.run
 | `src/explicit_trainer/framework/` | `abstract/` (modules, placements, steps and graphs, module implementations, plans), `schedule.py`, `trainer.py` (`docs/framework.md`) |
 | `src/explicit_trainer/tools/` | offline analysis: schedules (validate, simulate, search an order), profiled steps (time per step, idle time, timelines, dependencies, ranks), memory snapshots, running code with GPU-only packages stubbed |
 | `src/explicit_trainer/skills/` | instructions for agents, one Markdown file per skill (`et-skills install .claude/skills`) |
-| `src/explicit_trainer/loop/` | the scripted side of an agent's run toward a goal: `abstract/` (GpuProvider, Checker), their implementations in `gpu_provider/` and `checker/`, `loop.py` (Loop), `server.py` (a UNIX socket daemon and its client) |
+| `src/explicit_trainer/loop/` | the scripted side of an agent's run toward a goal: `abstract/` (GpuProvider, Checker, Hook), their implementations in `gpu_provider/`, `checker/` and `hook/`, `loop.py` (Loop), `server.py` (a UNIX socket daemon and its client) |
 | `src/explicit_trainer/cli/` | the commands below |
-| `examples/tiny/` | a complete small model, placement, implementations, plan and schedule that train on CPU or GPUs |
+| `examples/tiny/` | a complete small model, placement, implementations, plan and schedule, trained and checked on CPU with gloo |
 | `tests/` | unittest tests, no GPU needed |
 | `docs/` | `framework.md` (the design), `workflow.md` (the loop of a change) |
 | `AGENTS.md` | rules for AI agents working here |
