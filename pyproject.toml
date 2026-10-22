@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "explicit-trainer"
+version = "0.1.0"
+description = "A training framework in which a training step is written out explicitly, for agents that optimize it"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["torch>=2.4", "sympy", "numpy", "matplotlib"]
+
+[project.scripts]
+et-schedule = "explicit_trainer.cli.schedule:main"
+et-order = "explicit_trainer.cli.order:main"
+et-deps = "explicit_trainer.cli.deps:main"
+et-trace = "explicit_trainer.cli.trace:main"
+et-memsnap = "explicit_trainer.cli.memsnap:main"
+et-stub = "explicit_trainer.cli.stub:main"
+et-skills = "explicit_trainer.cli.skills:main"
+et-loop = "explicit_trainer.cli.loop:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"explicit_trainer.skills" = ["*.md"]
